@@ -205,7 +205,7 @@ personSchemaJSON = [aesonQQ|
     {
       "name":   { "type": "string"  },
       "phone":  { "type": "integer" },
-      "email":  { "type": "string"  }
+      "email":  { "type": "string", "nullable": true }
     },
   "required": ["name", "phone"]
 }
@@ -502,8 +502,52 @@ ispairSchemaJSON = [aesonQQ|
   "items":
     [
       { "type": "integer" },
-      { "type": "string"  }
-    ],
+      { "type": "string", "nullable": true }
+    ]
+  },
+  "minItems": 2,
+  "maxItems": 2
+}
+|]
+
+-- ========================================================================
+-- ISHomogeneousPair (non-record product data type)
+-- ========================================================================
+data ISHomogeneousPair = ISHomogeneousPair Integer Integer
+  deriving (Generic)
+
+instance ToSchema ISHomogeneousPair
+
+ishomogeneouspairSchemaJSON :: Value
+ishomogeneouspairSchemaJSON = [aesonQQ|
+{
+  "type": "array",
+  "items": { "type": "integer" },
+  "minItems": 2,
+  "maxItems": 2
+}
+|]
+
+-- ========================================================================
+-- PairWithRef (non-record product data type with ref)
+-- ========================================================================
+data PairWithRef = PairWithRef Integer Point
+  deriving (Generic)
+
+instance ToSchema PairWithRef
+
+pairwithrefSchemaJSON :: Value
+pairwithrefSchemaJSON = [aesonQQ|
+{
+  "type": "array",
+  "items": {
+    "anyOf": [
+      { "type": "integer"  },
+      {
+        "$ref": "#/components/schemas/Point"
+      }
+    ]
+  },
   "minItems": 2,
   "maxItems": 2
 }
@@ -903,8 +947,37 @@ singleMaybeFieldSchemaJSON = [aesonQQ|
   "type": "object",
   "properties":
     {
-      "singleMaybeField": { "type": "string" }
+      "singleMaybeField": { "type": "string", "nullable": true }
     }
+}
+|]
+
+-- ========================================================================
+-- Painter (record with an optional reference)
+-- ========================================================================
+
+data Painter = Painter { painterName :: String
+                       , favoriteColor :: Maybe Color
+                       }
+  deriving (Generic)
+
+instance ToSchema Painter
+
+painterSchemaJSON :: Value
+painterSchemaJSON = [aesonQQ|
+{
+  "type": "object",
+  "properties":
+    {
+      "painterName": { "type": "string" },
+      "favoriteColor": {
+        "anyOf": [
+          { "$ref": "#/components/schemas/Color" },
+          { "type": "object", "nullable": true }
+        ]
+      }
+    },
+  "required": ["painterName"]
 }
 |]
 

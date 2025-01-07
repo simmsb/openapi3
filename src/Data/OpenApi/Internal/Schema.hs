@@ -924,6 +924,7 @@ nullarySchema :: Schema
 nullarySchema = mempty
   & type_ ?~ OpenApiArray
   & items ?~ OpenApiItemsArray []
+  & nullable ?~ True
 
 gtoNamedSchema :: GToSchema f => SchemaOptions -> Proxy f -> NamedSchema
 gtoNamedSchema opts proxy = undeclare $ gdeclareNamedSchema opts proxy mempty

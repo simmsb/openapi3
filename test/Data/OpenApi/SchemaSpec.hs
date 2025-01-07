@@ -90,6 +90,7 @@ spec = do
       context "Status (sum of unary constructors)" $ checkToSchema (Proxy :: Proxy Status) statusSchemaJSON
       context "Character (ref and record sum)" $ checkToSchema (Proxy :: Proxy Character) characterSchemaJSON
       context "Light (sum with unwrapUnaryRecords)" $ checkToSchema (Proxy :: Proxy Light) lightSchemaJSON
+      context "SumWithNull (sum with one constructor containing a 0-tuple)" $ checkToSchema (Proxy :: Proxy SumWithNull) sumWithNullSchemaJSON
     context "UnsignedInts" $ checkToSchema (Proxy :: Proxy UnsignedInts) unsignedIntsSchemaJSON
     context "Schema name" $ do
       context "String" $ checkSchemaName Nothing (Proxy :: Proxy String)

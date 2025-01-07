@@ -285,6 +285,63 @@ playerPolySchemaJSON = [aesonQQ|
 |]
 
 -- ========================================================================
+-- Sum with nullary tuple
+-- ========================================================================
+
+data SumWithNull
+  = SumWithNullA
+  | SumWithNullB { _0 :: () }
+  deriving (Generic)
+
+instance ToSchema SumWithNull
+
+sumWithNullSchemaJSON :: Value
+sumWithNullSchemaJSON = [aesonQQ|
+{
+  "oneOf": [
+    {
+      "properties": {
+        "tag": {
+          "enum": [
+            "SumWithNullA"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "tag"
+      ],
+      "title": "SumWithNullA",
+      "type": "object"
+    },
+    {
+      "properties": {
+        "_0": {
+          "example": [],
+          "items": {},
+          "maxItems": 0,
+          "nullable": true,
+          "type": "array"
+        },
+        "tag": {
+          "enum": [
+            "SumWithNullB"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "_0",
+        "tag"
+      ],
+      "title": "SumWithNullB",
+      "type": "object"
+    }
+  ]
+}
+|]
+
+-- ========================================================================
 -- Character (sum type with ref and record in alternative)
 -- ========================================================================
 

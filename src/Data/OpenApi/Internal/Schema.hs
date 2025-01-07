@@ -25,7 +25,7 @@ module Data.OpenApi.Internal.Schema where
 import Prelude ()
 import Prelude.Compat
 
-import Control.Lens hiding (allOf)
+import Control.Lens hiding (allOf, anyOf)
 import Data.Data.Lens (template)
 
 import Control.Applicative ((<|>))

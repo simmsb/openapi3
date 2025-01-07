@@ -492,7 +492,7 @@ characterInlinedPlayerSchemaJSON = [aesonQQ|
 -- ========================================================================
 -- ISPair (non-record product data type)
 -- ========================================================================
-data ISPair = ISPair Integer String
+data ISPair = ISPair Integer (Maybe String)
   deriving (Generic)
 
 instance ToSchema ISPair
@@ -505,8 +505,7 @@ ispairSchemaJSON = [aesonQQ|
     [
       { "type": "integer" },
       { "type": "string", "nullable": true }
-    ]
-  },
+    ],
   "minItems": 2,
   "maxItems": 2
 }
@@ -559,7 +558,7 @@ pairwithrefSchemaJSON = [aesonQQ|
 -- PairWithNullRef (non-record product data type with nullable ref)
 -- ========================================================================
 data PairWithNullRef = PairWithNullRef Integer (Maybe Point)
-  deriving (Generic)
+  deriving (Generic, Show)
 
 instance ToJSON PairWithNullRef
 instance ToSchema PairWithNullRef

@@ -493,7 +493,7 @@ validateSchemaType val = withSchema $ \sch ->
     (view anyOf -> Just variants) -> do
       (asum $ (\var -> validateWithSchemaRef var val) <$> variants)
       <|> (invalid $ "Value not valid under any of 'anyOf' schemas: " ++ show val)
-    (view allOf -> Just variants) -> do
+    (view allOf -> Just variants) | (val /= Null && sch ^. nullable == Just True) -> do
       -- Default semantics for Validation Monad will abort when at least one
       -- variant does not match.
       forM_ variants $ \var ->

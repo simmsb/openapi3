@@ -629,10 +629,10 @@ pairwithnullrefSchemaJSON = [aesonQQ|
   "items": [
     { "type": "integer"  },
     {
-      "anyOf": [
-        { "$ref": "#/components/schemas/Point"} ,
-        { "type": "object", "nullable": true }
-      ]
+      "allOf": [
+        { "$ref": "#/components/schemas/Point"}
+      ],
+      "nullable": true
     }
   ],
   "minItems": 2,
@@ -1065,10 +1065,10 @@ painterSchemaJSON = [aesonQQ|
     {
       "painterName": { "type": "string" },
       "favoriteColor": {
-        "anyOf": [
-          { "$ref": "#/components/schemas/Color" },
-          { "type": "null", "nullable": true }
-        ]
+        "allOf": [
+          { "$ref": "#/components/schemas/Color" }
+        ],
+        "nullable": true
       }
     },
   "required": ["painterName"]

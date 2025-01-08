@@ -1003,7 +1003,7 @@ withFieldSchema :: forall proxy s f. (Selector s, GToSchema f) =>
   SchemaOptions -> proxy s f -> Schema -> Declare (Definitions Schema) Schema
 withFieldSchema opts _ schema = do
   let isRequiredField = not $ gomitSchemaField (Proxy :: Proxy f)
-  let setNullable = if isRequiredField
+  let setNullable = if isRequiredField || setNullableOnOmissable opts
                     then id
                     else \case
                       ref@(Ref _) -> Inline $ mempty & anyOf ?~ [ ref

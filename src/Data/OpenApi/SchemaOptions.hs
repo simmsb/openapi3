@@ -30,6 +30,10 @@ data SchemaOptions = SchemaOptions
   , unwrapUnaryRecords :: Bool
     -- | Specifies how to encode constructors of a sum datatype.
   , sumEncoding :: Aeson.SumEncoding
+    -- | If @'True'@ then don't mark types of omissable fields as nullable. To
+    -- be used with 'Aeson.omitNothingFields' where a field omission is used to
+    -- mark 'Nothing', instead of null.
+  , setNullableOnOmissable :: Bool
   }
 
 -- | Default encoding @'SchemaOptions'@.
@@ -53,6 +57,7 @@ defaultSchemaOptions = SchemaOptions
   , allNullaryToStringTag = True
   , unwrapUnaryRecords = False
   , sumEncoding = Aeson.defaultTaggedObject
+  , setNullableOnOmissable = False
   }
 
 
@@ -91,4 +96,5 @@ fromAesonOptions opts = defaultSchemaOptions
   , allNullaryToStringTag  = Aeson.allNullaryToStringTag  opts
   , unwrapUnaryRecords     = Aeson.unwrapUnaryRecords     opts
   , sumEncoding            = Aeson.sumEncoding            opts
+  , setNullableOnOmissable = Aeson.omitNothingFields      opts
   }

@@ -331,7 +331,6 @@ sumWithNullSchemaJSON = [aesonQQ|
         }
       },
       "required": [
-        "_0",
         "tag"
       ],
       "title": "SumWithNullB",

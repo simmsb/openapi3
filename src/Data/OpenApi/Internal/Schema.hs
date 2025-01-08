@@ -156,6 +156,10 @@ class Typeable a => ToSchema a where
     Proxy a -> Declare (Definitions Schema) NamedSchema
   declareNamedSchema = genericDeclareNamedSchema defaultSchemaOptions
 
+  -- | Can a field of this type be possibly omitted from a record. Mirrors the equivalent field of Aeson.ToJSON
+  omitField :: Proxy a -> Bool
+  omitField = const False
+
 instance ToSchema TimeOfDay where
   declareNamedSchema _ = pure $ named "TimeOfDay" $ timeSchema "hh:MM:ss"
     & example ?~ toJSON (TimeOfDay 12 33 15)
@@ -591,6 +595,10 @@ sketchStrictSchema = go . toJSON
 class GToSchema (f :: * -> *) where
   gdeclareNamedSchema :: SchemaOptions -> Proxy f -> Schema -> Declare (Definitions Schema) NamedSchema
 
+  -- | Can a field of this type be possibly omitted from a record. Mirrors the equivalent field of Aeson.ToJSON
+  gomitField :: Proxy f -> Bool
+  gomitField = const False
+
 instance {-# OVERLAPPABLE #-} ToSchema a => ToSchema [a] where
   declareNamedSchema _ = do
     ref <- declareSchemaRef (Proxy :: Proxy a)
@@ -625,6 +633,7 @@ instance (Typeable (Fixed a), HasResolution a) => ToSchema (Fixed a) where decla
 
 instance ToSchema a => ToSchema (Maybe a) where
   declareNamedSchema _ = declareNamedSchema (Proxy :: Proxy a)
+  omitField = const True
 
 instance (ToSchema a, ToSchema b) => ToSchema (Either a b) where
   -- To match Aeson instance
@@ -632,6 +641,7 @@ instance (ToSchema a, ToSchema b) => ToSchema (Either a b) where
 
 instance ToSchema () where
   declareNamedSchema _ = pure (NamedSchema Nothing nullarySchema)
+  omitField = const True
 
 -- | For 'ToJSON' instance, see <http://hackage.haskell.org/package/uuid-aeson uuid-aeson> package.
 instance ToSchema UUID.UUID where
@@ -924,7 +934,6 @@ nullarySchema :: Schema
 nullarySchema = mempty
   & type_ ?~ OpenApiArray
   & items ?~ OpenApiItemsArray []
-  & nullable ?~ True
 
 gtoNamedSchema :: GToSchema f => SchemaOptions -> Proxy f -> NamedSchema
 gtoNamedSchema opts proxy = undeclare $ gdeclareNamedSchema opts proxy mempty
@@ -991,8 +1000,9 @@ appendItem x (Just (OpenApiItemsArray xs)) = Just (OpenApiItemsArray (xs ++ [x])
 appendItem _ _ = error "GToSchema.appendItem: cannot append to OpenApiItemsObject"
 
 withFieldSchema :: forall proxy s f. (Selector s, GToSchema f) =>
-  SchemaOptions -> proxy s f -> Bool -> Schema -> Declare (Definitions Schema) Schema
-withFieldSchema opts _ isRequiredField schema = do
+  SchemaOptions -> proxy s f -> Schema -> Declare (Definitions Schema) Schema
+withFieldSchema opts _ schema = do
+  let isRequiredField = not $ gomitField (Proxy :: Proxy f)
   let setNullable = if isRequiredField
                     then id
                     else \case
@@ -1018,19 +1028,13 @@ withFieldSchema opts _ isRequiredField schema = do
   where
     fname = T.pack (fieldLabelModifier opts (selName (Proxy3 :: Proxy3 s f p)))
 
--- | Optional record fields.
-instance {-# OVERLAPPING #-} (Selector s, ToSchema c) => GToSchema (S1 s (K1 i (Maybe c))) where
-  gdeclareNamedSchema opts _ = fmap unnamed . withFieldSchema opts (Proxy2 :: Proxy2 s (K1 i (Maybe c))) False
-
 -- | Record fields.
-instance {-# OVERLAPPABLE #-} (Selector s, GToSchema f) => GToSchema (S1 s f) where
-  gdeclareNamedSchema opts _ = fmap unnamed . withFieldSchema opts (Proxy2 :: Proxy2 s f) True
-
-instance {-# OVERLAPPING #-} ToSchema c => GToSchema (K1 i (Maybe c)) where
-  gdeclareNamedSchema _ _ _ = declareNamedSchema (Proxy :: Proxy c)
+instance (Selector s, GToSchema f) => GToSchema (S1 s f) where
+  gdeclareNamedSchema opts _ = fmap unnamed . withFieldSchema opts (Proxy2 :: Proxy2 s f) -- (hasNullaryTuple (Proxy :: Proxy f))
 
 instance {-# OVERLAPPABLE #-} ToSchema c => GToSchema (K1 i c) where
   gdeclareNamedSchema _ _ _ = declareNamedSchema (Proxy :: Proxy c)
+  gomitField _ = omitField (Proxy :: Proxy c)
 
 instance ( GSumToSchema f
          , GSumToSchema g

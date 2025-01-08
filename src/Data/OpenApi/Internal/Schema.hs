@@ -157,8 +157,8 @@ class Typeable a => ToSchema a where
   declareNamedSchema = genericDeclareNamedSchema defaultSchemaOptions
 
   -- | Can a field of this type be possibly omitted from a record. Mirrors the equivalent field of Aeson.ToJSON
-  omitField :: Proxy a -> Bool
-  omitField = const False
+  omitSchemaField :: Proxy a -> Bool
+  omitSchemaField = const False
 
 instance ToSchema TimeOfDay where
   declareNamedSchema _ = pure $ named "TimeOfDay" $ timeSchema "hh:MM:ss"
@@ -596,8 +596,8 @@ class GToSchema (f :: * -> *) where
   gdeclareNamedSchema :: SchemaOptions -> Proxy f -> Schema -> Declare (Definitions Schema) NamedSchema
 
   -- | Can a field of this type be possibly omitted from a record. Mirrors the equivalent field of Aeson.ToJSON
-  gomitField :: Proxy f -> Bool
-  gomitField = const False
+  gomitSchemaField :: Proxy f -> Bool
+  gomitSchemaField = const False
 
 instance {-# OVERLAPPABLE #-} ToSchema a => ToSchema [a] where
   declareNamedSchema _ = do
@@ -633,7 +633,7 @@ instance (Typeable (Fixed a), HasResolution a) => ToSchema (Fixed a) where decla
 
 instance ToSchema a => ToSchema (Maybe a) where
   declareNamedSchema _ = declareNamedSchema (Proxy :: Proxy a)
-  omitField = const True
+  omitSchemaField = const True
 
 instance (ToSchema a, ToSchema b) => ToSchema (Either a b) where
   -- To match Aeson instance
@@ -641,7 +641,7 @@ instance (ToSchema a, ToSchema b) => ToSchema (Either a b) where
 
 instance ToSchema () where
   declareNamedSchema _ = pure (NamedSchema Nothing nullarySchema)
-  omitField = const True
+  omitSchemaField = const True
 
 -- | For 'ToJSON' instance, see <http://hackage.haskell.org/package/uuid-aeson uuid-aeson> package.
 instance ToSchema UUID.UUID where
@@ -1002,7 +1002,7 @@ appendItem _ _ = error "GToSchema.appendItem: cannot append to OpenApiItemsObjec
 withFieldSchema :: forall proxy s f. (Selector s, GToSchema f) =>
   SchemaOptions -> proxy s f -> Schema -> Declare (Definitions Schema) Schema
 withFieldSchema opts _ schema = do
-  let isRequiredField = not $ gomitField (Proxy :: Proxy f)
+  let isRequiredField = not $ gomitSchemaField (Proxy :: Proxy f)
   let setNullable = if isRequiredField
                     then id
                     else \case
@@ -1034,7 +1034,7 @@ instance (Selector s, GToSchema f) => GToSchema (S1 s f) where
 
 instance {-# OVERLAPPABLE #-} ToSchema c => GToSchema (K1 i c) where
   gdeclareNamedSchema _ _ _ = declareNamedSchema (Proxy :: Proxy c)
-  gomitField _ = omitField (Proxy :: Proxy c)
+  gomitSchemaField _ = omitSchemaField (Proxy :: Proxy c)
 
 instance ( GSumToSchema f
          , GSumToSchema g

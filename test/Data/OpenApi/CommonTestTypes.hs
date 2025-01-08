@@ -1067,7 +1067,7 @@ painterSchemaJSON = [aesonQQ|
       "favoriteColor": {
         "anyOf": [
           { "$ref": "#/components/schemas/Color" },
-          { "type": "object", "nullable": true }
+          { "type": "null", "nullable": true }
         ]
       }
     },

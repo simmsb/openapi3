@@ -1008,7 +1008,7 @@ withFieldSchema opts _ schema = do
                     else \case
                       ref@(Ref _) -> Inline $ mempty & anyOf ?~ [ ref
                                                                 , Inline $ mempty & nullable ?~ True
-                                                                                  & type_ ?~ OpenApiObject
+                                                                                  & type_ ?~ OpenApiNull
                                                                 ]
                       Inline s -> Inline $ s & nullable ?~ True
   ref <- setNullable <$> gdeclareSchemaRef opts (Proxy :: Proxy f)
